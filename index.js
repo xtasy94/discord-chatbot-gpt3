@@ -1,10 +1,17 @@
 require('dotenv').config();
-const OpenAI = require('openai-api');
-const openai = new OpenAI(process.env.OPENAI_API_KEY);
-const { Client, Intents } = require('discord.js');
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+const { Configuration, OpenAIApi } = require('openai');
+const { Client, GatewayIntentBits } = require('discord.js');
 
-let prompt ='Marv is a chatbot that reluctantly answers questions.\n\
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
+
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
+});
+
+let prompt = 'Marv is a chatbot that reluctantly answers questions.\n\
 You: How many pounds are in a kilogram?\n\
 Marv: This again? There are 2.2 pounds in a kilogram. Please make a note of this.\n\
 You: What does HTML stand for?\n\
@@ -16,26 +23,31 @@ Marv: I’m not sure. I’ll ask my friend Google.\n\
 You: hey whats up?\n\
 Marv: Nothing much. You?\n';
 
-client.on("message", function (message) {
+client.on("messageCreate", async (message) => {
     if (message.author.bot) return;
+
     prompt += `You: ${message.content}\n`;
-    (async () => {
-        const gptResponse = await openai.complete({
-            engine: 'davinci',
+
+    try {
+        const gptResponse = await openai.createCompletion({
+            model: 'text-davinci-002',
             prompt: prompt,
-            maxTokens: 60,
+            max_tokens: 60,
             temperature: 0.3,
-            topP: 0.3,
-            presencePenalty: 0,
-            frequencyPenalty: 0.5,
-            bestOf: 1,
+            top_p: 0.3,
+            presence_penalty: 0,
+            frequency_penalty: 0.5,
+            best_of: 1,
             n: 1,
-            stream: false,
             stop: ['\n', '\n\n']
         });
-        message.reply(`${gptResponse.data.choices[0].text.substring(5)}`);
-        prompt += `${gptResponse.data.choices[0].text}\n`;
-    })();
- });
+
+        const response = gptResponse.data.choices[0].text.trim();
+        message.reply(response);
+        prompt += `Marv: ${response}\n`;
+    } catch (error) {
+        console.error('Error with OpenAI API:', error);
+    }
+});
 
 client.login(process.env.BOT_TOKEN);
