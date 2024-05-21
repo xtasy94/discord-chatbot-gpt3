@@ -42,7 +42,7 @@ Ensure you have the following installed on your system:
    - Run the following command to install the necessary packages:
 
      ```sh
-     npm install
+     npm install dotenv discord.js openai
      ```
 
 4. **Start the Bot**
