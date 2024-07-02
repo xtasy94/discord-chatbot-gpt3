@@ -18,7 +18,7 @@ Ensure you have the following installed on your system:
 1. **Clone the Repository**
 
    ```sh
-   git clone https://github.com/yourusername/discord-chatbot-gpt3.git
+   git clone https://github.com/xtasy94/discord-chatbot-gpt3.git
    cd discord-chatbot-gpt3
    ```
 
